@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "chres.h"
 
-#include <stdio.h> 
+#include <stdio.h>
 #include <winuser.h>
 #include <iostream>
 #include <fstream>
@@ -11,18 +11,12 @@
 #pragma warning(disable : 4996)
 
 
-void GetDesktopResolution(unsigned int& horizontal, unsigned int& vertical)
+void GetCurrentResolution(unsigned int& horizontal, unsigned int& vertical)
 {
-	RECT desktop;
-	// Get a handle to the desktop window
-	const HWND hDesktop = GetDesktopWindow();
-	// Get the size of screen to the variable desktop
-	GetWindowRect(hDesktop, &desktop);
-	// The top left corner will have coordinates (0,0)
-	// and the bottom right corner will have coordinates
-	// (horizontal, vertical)
-	horizontal = desktop.right;
-	vertical = desktop.bottom;
+	DEVMODE dm;
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+	horizontal = dm.dmPelsWidth;
+	vertical = dm.dmPelsHeight;
 }
 
 //Splits a string using char as delimeter
@@ -52,9 +46,9 @@ inline bool fileExists(const std::string& name) {
 
 //This is the main method, the method which will be called when the program is run
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR    lpCmdLine,
+	_In_ int       nCmdShow)
 {
 	std::string tmpfile = getenv("temp");
 	tmpfile.append("\\chres.tmp");
@@ -63,10 +57,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	confFile.append("\\chres.conf");
 
 	unsigned int width, heigth;
-	GetDesktopResolution(width, heigth);
-	conf += std::to_string(width) + " " + std::to_string(heigth) + "\n1280 800";
+	GetCurrentResolution(width, heigth);
+	conf += std::to_string(width) + "x" + std::to_string(heigth) + "\n1280x800";
 
-	
+
 	if (!fileExists(confFile))
 	{
 		std::ofstream confStream;
@@ -82,17 +76,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		confStream.close();
 	}
 
-	std::vector<std::string> splitStr = split(conf, '\n'); 
+	std::vector<std::string> splitStr = split(conf, '\n');
 	std::vector<std::string> values;
 	if (fileExists(tmpfile))
 	{
-		values = split(*splitStr.begin(), ' ');
+		values = split(*splitStr.begin(), 'x');
 
 		remove(tmpfile.c_str());
 	}
 	else
 	{
-		values = split(*++splitStr.begin(), ' ');
+		values = split(*++splitStr.begin(), 'x');
 
 		std::ofstream outfile;
 		outfile.open(tmpfile);
@@ -115,30 +109,3 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	return 0;
 }
-
-
-
-
-/*
-std::wstring getWString(const std::string& s)
-{
-	int len;
-	int slength = (int)s.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
-	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-	std::wstring r(buf);
-	delete[] buf;
-	return r;
-}
-    std::string fileName = getenv("temp");
-	fileName.append("\\test.txt");
-
-	HANDLE hFile = CreateFile(getWString(fileName).c_str(),
-		GENERIC_READ | GENERIC_WRITE,
-		1,
-		NULL,
-		CREATE_NEW,
-		FILE_ATTRIBUTE_TEMPORARY,
-		NULL);
-*/
