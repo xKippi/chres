@@ -10,10 +10,11 @@
 
 #pragma warning(disable : 4996)
 
-
 void GetCurrentResolution(unsigned int& horizontal, unsigned int& vertical)
 {
 	DEVMODE dm;
+
+	//Getting current display settings and write them  into the dm variable
 	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
 	horizontal = dm.dmPelsWidth;
 	vertical = dm.dmPelsHeight;
@@ -61,8 +62,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	conf += std::to_string(width) + "x" + std::to_string(heigth) + "\n1280x800";
 
 
+	//if config does not exist create config, else read config
 	if (!fileExists(confFile))
 	{
+		//create config
 		std::ofstream confStream;
 		confStream.open(confFile);
 		confStream << conf;
@@ -70,12 +73,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 	else
 	{
+		//read config
 		std::ifstream confStream;
 		confStream.open(confFile);
 		conf = slurp(confStream);
 		confStream.close();
 	}
 
+	//Parse config
 	std::vector<std::string> splitStr = split(conf, '\n');
 	std::vector<std::string> values;
 	if (fileExists(tmpfile))
